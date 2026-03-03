@@ -1,16 +1,44 @@
-# newhope_attendance
+# Employee Attendance Regulator (Flutter)
 
-A new Flutter project.
+A Flutter-based **offline employee attendance management app** designed to help organizations track and control employee attendance efficiently.
 
-## Getting Started
+## 📱 Features
 
-This project is a starting point for a Flutter application.
+- Manage employees (add, update, delete)
+- Mark daily attendance using checkboxes
+- Prevent duplicate attendance for the same day
+- View attendance history per employee
+- Monthly attendance overview
+- Offline-first (no internet required)
 
-A few resources to get you started if this is your first Flutter project:
+## 🗄️ Local Storage
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- Uses **Drift (SQLite)** for local database storage
+- Relational structure for employees and attendance records
+- Ensures data consistency and prevents duplicate entries
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📅 Ethiopian Calendar Support
+
+- Attendance dates are displayed using the **Ethiopian Calendar**
+- Gregorian dates are stored internally and converted for UI display
+- Uses the `ethiopian_datetime` package
+
+## 🧩 Architecture & Tools
+
+- Flutter
+- Drift (SQLite)
+- GoRouter for navigation
+- Provider for dependency injection
+- Ethiopian calendar date formatting
+
+## 🚀 Use Case
+
+This app is suitable for:
+- Small organizations
+- Offices with offline environments
+- Daily employee attendance regulation
+
+## © Copyright
+
+© 2026 Dawit Misgna. All rights reserved.
+Unauthorized copying, modification, or redistribution without permission is prohibited.

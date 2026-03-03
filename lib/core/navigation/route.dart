@@ -15,16 +15,21 @@ class AppRoutes{
       path: '/',
       builder: (context, state) => const AttendancePage(),
     ),
-    GoRoute(path: '/employees', builder: (context, state) => const EmployeeListPage()),
     GoRoute(
-  path: '/employee/:id',
-  name: 'employeeDetail',
-  builder: (context, state) {
-    final id = int.parse(state.pathParameters['id']!);
-    return EmployeeDetailPage(employeeId: id);
-  },
-),
-GoRoute(path:'/admin', builder: (context, state) => const Admin()),
+      path: '/employees',
+      builder: (context, state) => const EmployeeListPage(),
+      routes: [
+        GoRoute(
+          path: '/:id',
+          name: 'employeeDetail',
+          builder: (context, state) {
+            final id = int.parse(state.pathParameters['id']!);
+            return EmployeeDetailPage(employeeId: id);
+          },
+        ),
+      ],
+    ),
+    GoRoute(path:'/admin', builder: (context, state) => const Admin()),
 
 
   ]);

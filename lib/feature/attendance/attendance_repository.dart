@@ -8,14 +8,17 @@ class AttendanceRepository {
 
   
   Future<void> markAttendance(int employeeId, DateTime date) async {
-    final normalizedDate = DateTime(date.year, date.month, date.day);
+    // IMPORTANT: We're storing Ethiopian date components directly
+    // The 'date' parameter is actually an ETDateTime with Ethiopian year/month/day
+    // We store these components as-is and treat them as Ethiopian dates throughout the system
+    final ethiopianDate = DateTime(date.year, date.month, date.day);
 
-    // Check if an attendance record already exists for this employee + day.
+    // Check if an attendance record already exists for this employee + Ethiopian day.
     final existing = await (db.select(db.attendances)
           ..where(
             (a) =>
                 a.employeeId.equals(employeeId) &
-                a.date.equals(normalizedDate),
+                a.date.equals(ethiopianDate),
           ))
         .getSingleOrNull();
 
@@ -27,7 +30,7 @@ class AttendanceRepository {
     await db.into(db.attendances).insert(
       AttendancesCompanion(
         employeeId: Value(employeeId),
-        date: Value(normalizedDate),
+        date: Value(ethiopianDate),
       ),
       mode: InsertMode.insertOrIgnore,
     );
@@ -61,5 +64,9 @@ class AttendanceRepository {
           ..where((a) => a.date.equals(date)))
         .go();
   }
+  // Future<List<DateTime>> getDayAttendance(DateTime date) async{
+  //    return await (db.select(db.attendances)..where((a) => a.date.equals(date)))
+  //         .get()
+  //         .then((attendances) => attendances.map((a) => a.date).toList());}
   
 }

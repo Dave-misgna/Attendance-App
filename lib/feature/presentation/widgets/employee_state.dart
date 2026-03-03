@@ -51,7 +51,7 @@ class EmployeeState extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Number of days worked: $numberOfDays',
+                    'የሰሩበት የቀናት ብዛት: $numberOfDays',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),

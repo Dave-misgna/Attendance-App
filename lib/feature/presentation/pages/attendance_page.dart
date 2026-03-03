@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:ethiopian_datetime/ethiopian_datetime.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +10,7 @@ import 'package:newhope_attendance/feature/presentation/widgets/attendance_card.
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
-
+  
   @override
   State<AttendancePage> createState() => _AttendancePageState();
 }
@@ -22,6 +23,9 @@ class _AttendancePageState extends State<AttendancePage> {
 
   final Set<int> _selectedEmployeeIds = {};
   DateTime? _lastBackPressed;
+  late ETDateTime _today;
+  late ETDateTime _yesterday;
+  late ETDateTime _selectedDate;
 
   @override
   void initState() {
@@ -30,6 +34,9 @@ class _AttendancePageState extends State<AttendancePage> {
     _employeeRepository = EmployeeRepository(_db);
     _attendanceRepository = AttendanceRepository(_db);
     _employeesFuture = _employeeRepository.getAllEmployees();
+    _today = ETDateTime.now();
+    _yesterday = _today.subtract(const Duration(days: 1));
+    _selectedDate = _today;
   }
 
   @override
@@ -60,7 +67,7 @@ class _AttendancePageState extends State<AttendancePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('New Hope Attendance'),
+          title: const Text('New Hopes Attendance'),
           centerTitle: true,
         ),
         body: Column(
@@ -77,6 +84,46 @@ class _AttendancePageState extends State<AttendancePage> {
                   color: Colors.blue.shade900,
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: DropdownButtonFormField2<ETDateTime>(
+              value: _selectedDate,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+              ),
+              dropdownStyleData: DropdownStyleData(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              buttonStyleData: const ButtonStyleData(
+                padding: EdgeInsets.symmetric(horizontal: 8),
+              ),
+              menuItemStyleData: const MenuItemStyleData(
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              ),
+              items: [
+                DropdownMenuItem(
+                  value: _today,
+                  child: Text('Today - ${ETDateFormat("dd-MMMM-yyyy").format(_today)}'),
+                ),
+                DropdownMenuItem(
+                  value: _yesterday,
+                  child: Text('Yesterday - ${ETDateFormat("dd-MMMM-yyyy").format(_yesterday)}'),
+                ),
+              ],
+              onChanged: (ETDateTime? newDate) {
+                if (newDate != null) {
+                  setState(() => _selectedDate = newDate);
+                }
+              },
             ),
           ),
           const SizedBox(height: 24),
@@ -153,16 +200,15 @@ class _AttendancePageState extends State<AttendancePage> {
                 onPressed: _selectedEmployeeIds.isEmpty
                     ? null
                     : () async {
-                        ETDateTime now = ETDateTime.now();
                         for (final id in _selectedEmployeeIds) {
-                          await _attendanceRepository.markAttendance(id, now);
+                          await _attendanceRepository.markAttendance(id, _selectedDate);
                         }
 
                         if (!mounted) return;
 
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Attendance submitted successfully'),
+                          SnackBar(
+                            content: Text('Attendance submitted for ${ETDateFormat("dd-MMMM-yyyy").format(_selectedDate)}'),
                           ),
                         );
 

@@ -12,16 +12,21 @@ class EmployeeListPage extends StatefulWidget {
   State<EmployeeListPage> createState() => _EmployeeListPageState();
 }
 
-class _EmployeeListPageState extends State<EmployeeListPage> {
+class _EmployeeListPageState extends State<EmployeeListPage> with AutomaticKeepAliveClientMixin {
   late final AppDatabase _db;
   late final EmployeeRepository _employeeRepository;
+  late Future<List<Employee>> _employeesFuture;
 
   @override
   void initState() {
     super.initState();
     _db = AppDatabase();
     _employeeRepository = EmployeeRepository(_db);
+    _employeesFuture = _employeeRepository.getAllEmployees();
   }
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void dispose() {
@@ -64,12 +69,15 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
     if (result == true) {
       await _employeeRepository.addEmployee(controller.text.trim());
       if (!mounted) return;
-      setState(() {});
+      setState(() {
+        _employeesFuture = _employeeRepository.getAllEmployees();
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -77,56 +85,50 @@ class _EmployeeListPageState extends State<EmployeeListPage> {
         context.go('/');
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Employees'),
-        ),
+        appBar: AppBar(title: const Text('Employees')),
         body: FutureBuilder<List<Employee>>(
-        future: _employeeRepository.getAllEmployees(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+          future: _employeesFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Failed to load employees',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Failed to load employees',
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
-              ),
-            );
-          }
-
-          final employees = snapshot.data ?? [];
-
-          if (employees.isEmpty) {
-            return const Center(
-              child: Text('No employees yet. Tap + to add one.'),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: employees.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final emp = employees[index];
-              return EmployeeCard(
-                name: emp.name,
-                onTap: () {
-                  context.goNamed(
-                    'employeeDetail',
-                    pathParameters: {
-                      'id': emp.id.toString(),
-                    },
-                  );
-                },
               );
-            },
-          );
-        },
-      ),
+            }
+
+            final employees = snapshot.data ?? [];
+
+            if (employees.isEmpty) {
+              return const Center(
+                child: Text('No employees yet. Tap + to add one.'),
+              );
+            }
+
+            return ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: employees.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final emp = employees[index];
+                return EmployeeCard(
+                  name: emp.name,
+                  onTap: () {
+                    context.goNamed(
+                      'employeeDetail',
+                      pathParameters: {'id': emp.id.toString()},
+                    );
+                  },
+                );
+              },
+            );
+          },
+        ),
         floatingActionButton: FloatingActionButton(
           onPressed: _addEmployeeDialog,
           child: const Icon(Icons.add),
